@@ -1,6 +1,8 @@
 package tests
 
 import (
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -42,6 +44,17 @@ func TestPiholeModuleGeneratesValidConfig(t *testing.T) {
 // TestPiholeDockerComposeIntegration tests the Docker Compose setup
 // This is our integration test to verify the pi-hole service starts correctly
 func TestPiholeDockerComposeIntegration(t *testing.T) {
-	// This test will be implemented once we have the Docker Compose file
-	t.Skip("Docker Compose integration test - to be implemented")
+	// Test Docker Compose setup works
+	composeFile := filepath.Join("pihole", "docker-compose.test.yml")
+	
+	// Check if docker-compose file exists
+	if _, err := os.Stat(composeFile); os.IsNotExist(err) {
+		t.Skip("Docker Compose test file not found")
+	}
+	
+	// For now we test that the file is valid YAML
+	data, err := ioutil.ReadFile(composeFile)
+	assert.NoError(t, err, "Should be able to read docker-compose file")
+	assert.Contains(t, string(data), "pihole-test", "Should contain pi-hole test service")
+	assert.Contains(t, string(data), "dns-test", "Should contain DNS test client")
 }

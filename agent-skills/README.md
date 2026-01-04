@@ -9,21 +9,24 @@ The TDG skill from Chanwit Kaewkasi helps with:
 - Automated documentation generation
 - Best practice recommendations
 
-### Setup Instructions
 
-1. **Configure TDG Skill**:
-   1. Ensure you have the latest GitHub Copilot extension installed in VS Code (Insiders or Stable).
-   2. Create a file named `agent.yaml` in this directory with the following content:
-      ```yaml
-      skills:
-        - id: chanwit/tdg
-          enabled: true
-      ```
-   3. Save the file.
-   4. Reload your VS Code window (Command Palette → "Developer: Reload Window").
-   5. Copilot will automatically detect and activate the TDG skill.
+### Setup & Integration Notes
 
-   You can now use TDG features via Copilot Chat or the Command Palette.
+**What we actually did:**
+
+- We followed the official documentation at https://code.visualstudio.com/docs/copilot/customization/agent-skills for local agent skills.
+- Instead of using `agent.yaml`, we cloned the `tdg` skill repository and placed the relevant skills in `.github/skills/` as described in the docs.
+- After reloading VS Code, Copilot Chat can now recognize and use the local skills (TDG and Atomic Commit).
+
+**Next step: Initialize TDG**
+
+The TDG skill expects a `TDG.md` file in your project. If it does not exist, you should initialize it by running the following command in Copilot Chat:
+
+      /tdg:init
+
+This will create the required TDG.md file and set up the project for TDG workflows.
+
+You can then proceed with the TDD workflow as described in the skill's instructions.
 
 2. **Configure for Home Lab Use**:
    - Focus on Docker container management modules

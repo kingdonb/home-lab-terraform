@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  pihole-test:
+    image: pihole/pihole:latest
+    container_name: pihole-integration-test
+    environment:
+      - TZ=America/New_York
+      - WEBPASSWORD=testpassword
+      - PIHOLE_DNS_=1.1.1.1;1.0.0.1
+      - DNSMASQ_LISTENING=all
+    ports:
+      - "15353:53/tcp"
+      - "15353:53/udp"  
+      - "18080:80/tcp"
+    volumes:
+      - pihole_data_test:/etc/pihole
+      - pihole_dnsmasq_test:/etc/dnsmasq.d
+    networks:
+      - pihole_test_net
+    healthcheck:
+      test: ["CMD", "dig", "@127.0.0.1", "-p", "53", "pi.hole", "+short"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+
+  # Test service to verify DNS functionality
+  dns-test:
+    image: alpine:latest
+    container_name: dns-test-client
+    command: |
+      sh -c "
+        apk add --no-cache bind-tools curl &&
+        echo 'Testing pi-hole DNS resolution...' &&
+        sleep 30 &&
+        dig @pihole-test -p 53 google.com +short &&
+        echo 'DNS test completed'
+      "
+    depends_on:
+      - pihole-test
+    networks:
+      - pihole_test_net
+
+volumes:
+  pihole_data_test:
+  pihole_dnsmasq_test:
+
+networks:
+  pihole_test_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
