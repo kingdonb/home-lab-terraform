@@ -21,3 +21,10 @@ variable "synology_host" {
   type        = string
   default     = ""
 }
+
+variable "pihole_password" {
+  description = "Admin password for Pi-hole web interface"
+  type        = string
+  sensitive   = true
+  default     = "admin"
+}

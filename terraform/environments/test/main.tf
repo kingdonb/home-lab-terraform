@@ -55,10 +55,13 @@ module "secondary_pihole" {
   }]
 }
 
-# Synology SSH connection (when enabled)
-module "synology_connection" {
-  source = "../../modules/synology-ssh"
-  count  = var.synology_host != "" ? 1 : 0
+# Configure DNS records in primary Pi-hole
+module "pihole_config" {
+  source = "../../modules/pihole-config"
   
-  host = var.synology_host
+  pihole_base_url = "http://localhost:8080"
+  pihole_password = var.pihole_password
+  
+  # Wait for Pi-hole to be ready
+  depends_on = [module.primary_pihole]
 }

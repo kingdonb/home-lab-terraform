@@ -25,3 +25,7 @@ Thumbs.db
 # chanwit/tdg
 /tdg/
 cookies.txt
+
+# cozystack-infra scripts
+/cozystack-infra/
+/cozystack-infra/**

@@ -27,3 +27,18 @@ output "synology_connection_status" {
   description = "Synology SSH connection status"
   value       = length(module.synology_connection) > 0 ? module.synology_connection[0].connection_status : "Not configured"
 }
+
+output "pihole_config_summary" {
+  description = "Pi-hole configuration summary"
+  value       = module.pihole_config.pihole_config_summary
+}
+
+output "dns_records_created" {
+  description = "DNS records created in Pi-hole"
+  value       = module.pihole_config.dns_records_created
+}
+
+output "cname_records_created" {
+  description = "CNAME records created in Pi-hole"
+  value       = module.pihole_config.cname_records_created
+}
