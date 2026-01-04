@@ -7,9 +7,6 @@ terraform {
   }
 }
 
-# Configure the Docker Provider
-provider "docker" {}
-
 # Create a Docker network for pi-hole
 resource "docker_network" "pihole_network" {
   name = var.network_name
@@ -76,6 +73,15 @@ resource "docker_container" "pihole" {
   volumes {
     volume_name    = docker_volume.pihole_dnsmasq.name
     container_path = "/etc/dnsmasq.d"
+  }
+  
+  # Additional volumes (for shared config, etc.)
+  dynamic "volumes" {
+    for_each = var.extra_volumes
+    content {
+      volume_name    = volumes.value.volume_name
+      container_path = volumes.value.container_path
+    }
   }
   
   # Connect to network

@@ -58,3 +58,12 @@ variable "dnsmasq_listening" {
   type        = string
   default     = "all"
 }
+
+variable "extra_volumes" {
+  description = "Additional volumes to mount in the container"
+  type = list(object({
+    volume_name    = string
+    container_path = string
+  }))
+  default = []
+}

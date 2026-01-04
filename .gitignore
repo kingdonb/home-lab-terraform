@@ -1,9 +1,9 @@
 # Terraform
-.terraform/
-.terraform.lock.hcl
-*.tfstate
-*.tfstate.*
-*.tfplan
+/**/.terraform/
+/**/.terraform.lock.hcl
+/**/*.tfstate
+/**/*.tfstate.*
+/**/*.tfplan
 
 # Go
 /vendor/
