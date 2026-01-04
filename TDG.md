@@ -30,10 +30,32 @@ This file was created by running `/tdg:init`.
 - `go tool cover -html=coverage.out`
 
 ## Test Strategy
-For our pi-hole module, we'll use:
-1. **Unit tests**: Validate Terraform configuration generation
-2. **Integration tests**: Test Docker Compose setup locally
-3. **Contract tests**: Verify API responses from pi-hole service
+For our multi-pi-hole DNS infrastructure, we'll use:
+1. **Unit tests**: Validate Terraform configuration generation for multiple instances
+2. **Integration tests**: Test Docker Compose setup with primary/secondary DNS
+3. **Contract tests**: Verify DNS failover and sync between instances
+4. **SSH connectivity tests**: Validate secure connection to Synology devices
+5. **Credential safety tests**: Ensure no secrets leak into version control
+
+## Current Sprint: Multi-Pi-hole DNS Infrastructure
+**Goal**: Create redundant DNS infrastructure with seamless failover and synchronized configuration.
+
+**Acceptance Criteria**:
+- [ ] Deploy secondary pi-hole instance alongside existing primary
+- [ ] Configure DNS failover (primary → secondary)
+- [ ] Implement configuration sync between pi-hole instances
+- [ ] Enable SSH-based deployment to Synology devices
+- [ ] Secure credential management via 1Password CLI
+- [ ] Zero-downtime migration path for existing DNS setup
+- [ ] Validation that both DNS servers respond correctly
+- [ ] Terraform plan/apply works without manual intervention
+
+**Technical Requirements**:
+- SSH provider for Synology device management
+- 1Password CLI integration for credential access
+- Multi-instance pi-hole module with shared configuration
+- DNS health check and failover validation
+- Configuration sync mechanism (shared volumes or API sync)
 
 ---
 
