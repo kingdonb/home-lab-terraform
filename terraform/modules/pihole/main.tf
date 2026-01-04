@@ -7,9 +7,6 @@ terraform {
   }
 }
 
-# Configure the Docker Provider
-provider "docker" {}
-
 # Create a Docker network for pi-hole
 resource "docker_network" "pihole_network" {
   name = var.network_name
@@ -39,32 +36,51 @@ resource "docker_container" "pihole" {
   image = docker_image.pihole.image_id
   
   restart = "unless-stopped"
+  shm_size = var.shm_size_mb
   
-  # Environment variables
+  # Use host networking if specified (required for multi-subnet DNS)
+  network_mode = var.use_host_network ? "host" : "bridge"
+  
+  # Environment variables (Pi-hole v6+ format)
   env = [
     "TZ=${var.timezone}",
-    "WEBPASSWORD=${var.web_password}",
-    "PIHOLE_DNS_=${var.upstream_dns}",
-    "DNSMASQ_LISTENING=${var.dnsmasq_listening}",
+    "FTLCONF_webserver_api_password=${var.web_password}",
+    "PIHOLE_DNS_=${var.upstream_dns}", 
+    "FTLCONF_dns_listeningMode=${upper(var.dnsmasq_listening)}",
+    "WEB_PORT=${var.web_port}",
   ]
   
-  # Port mappings
-  ports {
-    internal = 53
-    external = var.dns_port
-    protocol = "tcp"
+  # Linux capabilities (required for DNS binding)
+  capabilities {
+    add = var.capabilities
   }
   
-  ports {
-    internal = 53
-    external = var.dns_port
-    protocol = "udp"
+  # Port mappings (only when NOT using host networking)
+  dynamic "ports" {
+    for_each = var.use_host_network ? [] : [1]
+    content {
+      internal = 53
+      external = var.dns_port
+      protocol = "tcp"
+    }
   }
   
-  ports {
-    internal = 80
-    external = var.web_port
-    protocol = "tcp"
+  dynamic "ports" {
+    for_each = var.use_host_network ? [] : [1]
+    content {
+      internal = 53
+      external = var.dns_port
+      protocol = "udp"
+    }
+  }
+  
+  dynamic "ports" {
+    for_each = var.use_host_network ? [] : [1]
+    content {
+      internal = 80
+      external = var.web_port
+      protocol = "tcp"
+    }
   }
   
   # Volume mounts
@@ -78,9 +94,21 @@ resource "docker_container" "pihole" {
     container_path = "/etc/dnsmasq.d"
   }
   
-  # Connect to network
-  networks_advanced {
-    name = docker_network.pihole_network.name
+  # Additional volumes (for shared config, etc.)
+  dynamic "volumes" {
+    for_each = var.extra_volumes
+    content {
+      volume_name    = volumes.value.volume_name
+      container_path = volumes.value.container_path
+    }
+  }
+  
+  # Connect to network (only if not using host networking)
+  dynamic "networks_advanced" {
+    for_each = var.use_host_network ? [] : [1]
+    content {
+      name = docker_network.pihole_network.name
+    }
   }
   
   # Healthcheck

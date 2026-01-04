@@ -1,9 +1,9 @@
 # Terraform
-.terraform/
-.terraform.lock.hcl
-*.tfstate
-*.tfstate.*
-*.tfplan
+/**/.terraform/
+/**/.terraform.lock.hcl
+/**/*.tfstate
+/**/*.tfstate.*
+/**/*.tfplan
 
 # Go
 /vendor/
@@ -21,3 +21,11 @@ Thumbs.db
 
 # Logs
 *.log
+
+# chanwit/tdg
+/tdg/
+cookies.txt
+
+# cozystack-infra scripts
+/cozystack-infra/
+/cozystack-infra/**

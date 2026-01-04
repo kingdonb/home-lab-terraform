@@ -58,3 +58,30 @@ variable "dnsmasq_listening" {
   type        = string
   default     = "all"
 }
+
+variable "extra_volumes" {
+  description = "Additional volumes to mount in the container"
+  type = list(object({
+    volume_name    = string
+    container_path = string
+  }))
+  default = []
+}
+
+variable "use_host_network" {
+  description = "Use host networking mode instead of bridge (required for multi-subnet DNS)"
+  type        = bool
+  default     = false
+}
+
+variable "shm_size_mb" {
+  description = "Shared memory size in MB"
+  type        = number
+  default     = 256
+}
+
+variable "capabilities" {
+  description = "Linux capabilities to add to the container"
+  type        = list(string)
+  default     = ["NET_ADMIN", "SYS_TIME", "SYS_NICE"]
+}

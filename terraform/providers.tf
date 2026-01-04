@@ -6,6 +6,10 @@ terraform {
       source  = "kreuzwerker/docker"
       version = "~> 3.0"
     }
+    pihole = {
+      source  = "lukaspustina/pihole"
+      version = "~> 0.3"
+    }
     # TODO: Add additional providers as needed
     # ssh = {
     #   source = "loafoe/ssh" 
