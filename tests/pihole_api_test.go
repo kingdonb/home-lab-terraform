@@ -213,6 +213,7 @@ func TestPiholeAPIFunctionality(t *testing.T) {
 		Vars: map[string]interface{}{
 			"container_name":         "pihole-api-test",
 			"network_name":          "pihole-api-net",
+			"subnet":                "172.24.0.0/16", // Unique subnet to avoid conflicts
 			"dns_port":              25353, // Different port to avoid conflicts
 			"web_port":              28080,
 			"timezone":              "America/New_York",
@@ -374,6 +375,7 @@ func TestPiholeAPIConfiguration(t *testing.T) {
 		Vars: map[string]interface{}{
 			"container_name":         "pihole-config-test",
 			"network_name":          "pihole-config-net", 
+			"subnet":                "172.25.0.0/16", // Unique subnet to avoid conflicts
 			"dns_port":              26353,
 			"web_port":              28081,
 			"timezone":              "America/New_York",

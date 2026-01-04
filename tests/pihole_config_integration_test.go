@@ -20,6 +20,7 @@ func TestPiholeConfigurationModule(t *testing.T) {
 		Vars: map[string]interface{}{
 			"container_name":     "pihole-config-integration",
 			"network_name":       "pihole-config-int-net",
+			"subnet":             "172.27.0.0/16", // Unique subnet to avoid conflicts
 			"dns_port":           29353, // Unique port for this test
 			"web_port":           29080,
 			"timezone":           "America/New_York",

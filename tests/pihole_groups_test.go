@@ -239,6 +239,7 @@ func TestPiholeGroupManagement(t *testing.T) {
 		Vars: map[string]interface{}{
 			"container_name":     "pihole-groups-test",
 			"network_name":       "pihole-groups-net",
+			"subnet":             "172.26.0.0/16", // Unique subnet to avoid conflicts
 			"dns_port":           27353, // Unique port for this test
 			"web_port":           27080,
 			"timezone":           "America/New_York",
