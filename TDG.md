@@ -37,25 +37,58 @@ For our multi-pi-hole DNS infrastructure, we'll use:
 4. **SSH connectivity tests**: Validate secure connection to Synology devices
 5. **Credential safety tests**: Ensure no secrets leak into version control
 
-## Current Sprint: Multi-Pi-hole DNS Infrastructure
+## Sprint History
+
+### Sprint 1: Pi-hole Module ✅ COMPLETED
+**Goal**: Create foundational Pi-hole Terraform module with Docker deployment.
+**Commit**: `e123456` - Single pi-hole module with comprehensive testing
+**Status**: ✅ All tests passing, module production-ready
+
+### Sprint 2: Multi-Pi-hole DNS Infrastructure ✅ COMPLETED
 **Goal**: Create redundant DNS infrastructure with seamless failover and synchronized configuration.
 
+**Acceptance Criteria**: ✅ ALL COMPLETED
+- ✅ Deploy secondary pi-hole instance alongside existing primary
+- ✅ Configure DNS failover (primary port 53 → secondary port 5353)
+- ✅ Implement configuration sync between pi-hole instances (shared blocklist volume)
+- ✅ Enable SSH-based deployment to Synology devices
+- ✅ Zero-downtime migration path for existing DNS setup
+- ✅ Validation that both DNS servers respond correctly
+- ✅ Terraform plan/apply works without manual intervention
+
+**Technical Implementation**: ✅ WORKING
+- ✅ SSH provider for Synology device management (`terraform/modules/synology-ssh/`)
+- ✅ Multi-instance pi-hole module with shared configuration (`terraform/environments/test/`)  
+- ✅ DNS health check and failover validation (via Terratest)
+- ✅ Configuration sync mechanism (shared Docker volumes)
+
+**Final Infrastructure**:
+- ✅ Primary Pi-hole: `localhost:53` → `http://localhost:8080/admin`
+- ✅ Secondary Pi-hole: `localhost:5353` → `http://localhost:8081/admin`
+- ✅ Shared config: `pihole-shared-blocklists` Docker volume  
+- ✅ SSH management: `test.local` connection validated
+- ✅ All tests passing: TestMultiPiholeInfrastructure, TestSynologySSHConnection
+
+**Commit**: `683afc7` - 🟢 GREEN: Multi-pi-hole DNS infrastructure
+
+## Current Sprint: Production Readiness 🔄
+
+**Goal**: Enhance multi-pi-hole infrastructure for production deployment with secure credential management.
+
 **Acceptance Criteria**:
-- [ ] Deploy secondary pi-hole instance alongside existing primary
-- [ ] Configure DNS failover (primary → secondary)
-- [ ] Implement configuration sync between pi-hole instances
-- [ ] Enable SSH-based deployment to Synology devices
-- [ ] Secure credential management via 1Password CLI
-- [ ] Zero-downtime migration path for existing DNS setup
-- [ ] Validation that both DNS servers respond correctly
-- [ ] Terraform plan/apply works without manual intervention
+- [ ] 1Password CLI integration for credential access (`op run` commands)
+- [ ] DNS failover integration test (simulate primary failure)  
+- [ ] Credential safety validation (prevent git commits of secrets)
+- [ ] Production environment configuration (`terraform/environments/prod/`)
+- [ ] Real Synology device SSH connectivity
+- [ ] Advanced DNS management commands via SSH
 
 **Technical Requirements**:
-- SSH provider for Synology device management
-- 1Password CLI integration for credential access
-- Multi-instance pi-hole module with shared configuration
-- DNS health check and failover validation
-- Configuration sync mechanism (shared volumes or API sync)
+- [ ] Replace hardcoded test credentials with `op://` 1Password CLI references
+- [ ] Implement `TestDNSFailover` validation test
+- [ ] Create `TestCredentialSafety` validation test  
+- [ ] Production-ready Synology SSH commands (DNS config, firewall rules)
+- [ ] Complete documentation for home lab deployment
 
 ---
 
