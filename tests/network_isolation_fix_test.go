@@ -24,8 +24,8 @@ func TestNetworkIsolationFix(t *testing.T) {
 			"container_name":     fmt.Sprintf("pihole-isolation-test-%s", testID),
 			"network_name":       fmt.Sprintf("pihole-isolation-net-%s", testID), // UNIQUE NETWORK NAME
 			"subnet":             fmt.Sprintf("172.%d.0.0/16", 40+(len(testID)%10)), // Unique subnet
-			"dns_port":           32000 + (len(testID) % 1000), // Unique port
-			"web_port":           33000 + (len(testID) % 1000), // Unique port
+			"dns_port":           32008, // Fixed port for this test
+			"web_port":           33008, // Fixed port for this test
 			"timezone":           "America/New_York",
 			"web_password":       fmt.Sprintf("isolation-test-%s", testID),
 			"dnsmasq_listening":  "all",
