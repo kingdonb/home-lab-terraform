@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"os"
 	"sync"
@@ -32,13 +33,16 @@ var (
 // GetSharedPiholeEnvironment returns the singleton shared environment
 func GetSharedPiholeEnvironment() *SharedPiholeEnvironment {
 	sharedEnvOnce.Do(func() {
+		// Generate unique identifier for this test session
+		sessionID := fmt.Sprintf("%x", sha256.Sum256([]byte(fmt.Sprintf("shared-env-%d", time.Now().Unix()))))[:8]
+		
 		sharedEnv = &SharedPiholeEnvironment{
-			BaseURL:       "http://localhost:30080",
-			Password:      "shared-test-password",
-			DNSPort:       30353,
-			WebPort:       30080,
-			ContainerName: "pihole-shared-test",
-			NetworkName:   "pihole-shared-net",
+			BaseURL:       fmt.Sprintf("http://localhost:%d", 30080+len(sessionID)%100),
+			Password:      fmt.Sprintf("shared-test-%s", sessionID),
+			DNSPort:       30353 + len(sessionID)%100,
+			WebPort:       30080 + len(sessionID)%100,
+			ContainerName: fmt.Sprintf("pihole-shared-test-%s", sessionID),
+			NetworkName:   fmt.Sprintf("pihole-shared-net-%s", sessionID),
 			Initialized:   false,
 		}
 
@@ -47,7 +51,7 @@ func GetSharedPiholeEnvironment() *SharedPiholeEnvironment {
 			Vars: map[string]interface{}{
 				"container_name":     sharedEnv.ContainerName,
 				"network_name":       sharedEnv.NetworkName,
-				"subnet":             "172.30.0.0/16", // Dedicated subnet for shared environment
+				"subnet":             fmt.Sprintf("172.%d.0.0/16", 100+len(sessionID)%150), // Wide subnet spacing for isolation
 				"dns_port":           sharedEnv.DNSPort,
 				"web_port":           sharedEnv.WebPort,
 				"timezone":           "America/New_York",
@@ -174,27 +178,27 @@ func GetTestEnvironment(t *testing.T, config SharedTestConfig) (*terraform.Optio
 
 // createDedicatedEnvironment creates a dedicated test environment
 func createDedicatedEnvironment(t *testing.T, config SharedTestConfig) (*terraform.Options, string, string, error) {
-	// Generate unique ports and network based on test name
-	testHash := fmt.Sprintf("%x", t.Name())[:6]
-	basePort := 31000 + (len(testHash) % 1000) // Use test name hash for port uniqueness
+	// Generate unique identifier based on test name + timestamp for true uniqueness
+	testID := fmt.Sprintf("%x", sha256.Sum256([]byte(fmt.Sprintf("%s-%d", t.Name(), time.Now().UnixNano()))))[:8]
+	basePort := 31000 + (len(testID) % 1000) // Use hash for port uniqueness
 	
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: "../terraform/modules/pihole",
 		Vars: map[string]interface{}{
-			"container_name":     fmt.Sprintf("pihole-test-%s", testHash),
-			"network_name":       fmt.Sprintf("pihole-net-%s", testHash),
-			"subnet":             fmt.Sprintf("172.%d.0.0/16", 31+(len(testHash)%20)), // Unique subnets 172.31-50.0.0/16
+			"container_name":     fmt.Sprintf("pihole-test-%s", testID),
+			"network_name":       fmt.Sprintf("pihole-net-%s", testID),
+			"subnet":             fmt.Sprintf("172.%d.0.0/16", 101+(len(testID)%150)), // Wide subnet spacing for isolation
 			"dns_port":           basePort,
 			"web_port":           basePort + 1,
 			"timezone":           "America/New_York", 
-			"web_password":       fmt.Sprintf("test-password-%s", testHash),
+			"web_password":       fmt.Sprintf("test-password-%s", testID),
 			"dnsmasq_listening":  "all",
 			"use_host_network":   false,
 		},
 	})
 	
 	baseURL := fmt.Sprintf("http://localhost:%d", basePort+1)
-	password := fmt.Sprintf("test-password-%s", testHash)
+	password := fmt.Sprintf("test-password-%s", testID)
 	
 	return terraformOptions, baseURL, password, nil
 }

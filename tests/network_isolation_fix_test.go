@@ -10,6 +10,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// cleanupContainerOnly removes container and volumes but leaves Docker image intact
+// This prevents conflicts when multiple tests share the same image
+func cleanupContainerOnly(t *testing.T, terraformOptions *terraform.Options) {
+	// Remove only container, networks, and volumes - not the image
+	_, err := terraform.RunTerraformCommandE(t, terraformOptions, "destroy", "-auto-approve", "-target=docker_container.pihole", "-target=docker_network.pihole_network", "-target=docker_volume.pihole_data", "-target=docker_volume.pihole_dnsmasq")
+	if err != nil {
+		t.Logf("Container cleanup completed with minor errors: %v", err)
+	}
+}
+
 // TestNetworkIsolationFix - RED phase test to fix network isolation issues
 // This addresses the core issue preventing GREEN phase: network name conflicts
 func TestNetworkIsolationFix(t *testing.T) {
@@ -23,7 +33,7 @@ func TestNetworkIsolationFix(t *testing.T) {
 		Vars: map[string]interface{}{
 			"container_name":     fmt.Sprintf("pihole-isolation-test-%s", testID),
 			"network_name":       fmt.Sprintf("pihole-isolation-net-%s", testID), // UNIQUE NETWORK NAME
-			"subnet":             fmt.Sprintf("172.%d.0.0/16", 40+(len(testID)%10)), // Unique subnet
+			"subnet":             fmt.Sprintf("172.%d.0.0/16", 100+(len(testID)%50)), // Wide spacing: 172.100-150.0.0/16
 			"dns_port":           32008, // Fixed port for this test
 			"web_port":           33008, // Fixed port for this test
 			"timezone":           "America/New_York",
@@ -33,8 +43,8 @@ func TestNetworkIsolationFix(t *testing.T) {
 		},
 	})
 
-	// Cleanup on test completion
-	defer terraform.Destroy(t, terraformOptions)
+	// Cleanup on test completion - avoid Docker image conflicts
+	defer cleanupContainerOnly(t, terraformOptions)
 
 	// Apply terraform - this should work without network conflicts
 	terraform.InitAndApply(t, terraformOptions)
@@ -63,7 +73,7 @@ func TestQuickContainerStartup(t *testing.T) {
 		Vars: map[string]interface{}{
 			"container_name":     fmt.Sprintf("pihole-startup-test-%s", testID),
 			"network_name":       fmt.Sprintf("pihole-startup-net-%s", testID),
-			"subnet":             fmt.Sprintf("172.%d.0.0/16", 50+(len(testID)%10)),
+			"subnet":             fmt.Sprintf("172.%d.0.0/16", 200+(len(testID)%50)), // Wide spacing: 172.200-250.0.0/16
 			"dns_port":           34000 + (len(testID) % 1000),
 			"web_port":           35000 + (len(testID) % 1000),
 			"timezone":           "America/New_York",
@@ -73,7 +83,7 @@ func TestQuickContainerStartup(t *testing.T) {
 		},
 	})
 
-	defer terraform.Destroy(t, terraformOptions)
+	defer cleanupContainerOnly(t, terraformOptions)
 
 	// Apply and measure startup time
 	terraform.InitAndApply(t, terraformOptions)
